@@ -1,0 +1,109 @@
+Question:
+Look at the following command and explain what it does by going through the documentation of each of the individual commands. Use the tools you've learned in the previous lesson to figure out step by step what is happening in the following.
+
+curl -s http://public-dns.info/nameserver/br.csv | cut -d, -f1 | shuf | tail -n 50 | xargs -i timeout 1 ping -c1 -w 1 {} | grep "time=" | awk '{print substr($7, 6, length($7)) " " substr($4, 1, length($4) -1)}' | sort -n | awk '{print $2 " " $1 "ms"}' | head -n 10
+
+In the submission, explain how the each command, its options and complete command works
+
+Submission:
+
+1.The given command is the combination of several unix commands pipelined together using the pipe operator, it is represented using "|" a pipe is a form of redirection and its function is to combine two or more commands, and in this, the output of one command acts as input to another command, and this command’s output may act as input to the next command and so on.
+Syntax:
+command_1 | command_2 | command_3 | .... | command_N 
+
+2.Pipes are unidirectional i.e data flows from left to right through the pipeline,hence we execute and solve the given command in the same order i.e., from curl command to head command.
+
+3.curl is a command line tool to transfer data to or from a server, using any of the supported protocols (HTTP, FTP, IMAP, POP3, SCP, SFTP, SMTP, TFTP, TELNET, LDAP or FILE)
+Syntax:
+curl [options] [URL...]
+The given command is curl -s http://public-dns.info/nameserver/br.csv
+This displays the content of the csv file on the terminal. The URL syntax is protocol dependent(in this case HTTP protocol).
+-s, --silent is the option used in the command. The implementation of curl with the option -s represents the silent or quite mode. It does not show an error messages even if any error exists and will still output the data asked for on the terminal.
+
+4.Since this command is piped with the cut command, the content obtained by the curl command is redirected as the input to cut command. The cut command is used for cutting out the sections from each line of files and writing the result to standard output. It can be used to cut parts of a line by byte position, character and field. It is necessary to specify option with command otherwise it gives error.
+Syntax:
+cut OPTION... [FILE]...
+The given command is cut -d, -f1
+Option -f stands for fields, to extract the useful information obtained in the .csv file we need to cut by fields rather than columns and 1 represents the starting indexto cut is field 1.
+Option -d stands for delimiter i.e., when it encounters a delimiter(can be tab,',','.',etc) the text in the field gets split (cut) and moves to next field, the cut command uses tab as a default field delimiter. Where as in this case (,) is used as a delimiter.
+Syntax:
+cut -d "delimiter" -f (field number) file.txt
+
+5.The output obtained after processing the cut command are in the form of IP address and is piped as an input to shuf command.The Shuf command is used to generate random permutations. Using shuf command, we can shuffle the lines of a given input file randomly.
+Syntax:
+shuf file.txt
+
+6.This suffled output is piped as an input to tail command.The tail command, as the name implies, print the last n number of data of the given input. By default it prints the last 10 lines of the specified files. 
+Syntax:
+tail [OPTION]... [FILE]...
+The given command is tail -n 50
+Option -n: Prints the last -n lines instead of last 10 lines. num is mandatory to be specified in command otherwise it displays an error. This command can also be written as without symbolizing n character but - sign is mandatory. 
+This displays the last 50 lines from the shuffled output.
+
+7.These 50 lines (IP format) are used as input to the ping command which is internally timed and running with timeout and executed with xargs.
+xargs command can be used to build and execute commands from standard input.Some commands like grep can accept input as parameters, but some commands accepts arguments, this is place where xargs came into picture.
+The given command is xargs -i timeout 1 ping -c1 -w 1 {} 
+Syntax :
+xargs [options] [command]
+Here xargs is used with -i option,-i replace-str replaces the occurrences of replace-str in the initial arguments with names read from standard input. But the replace-str argument is missing in the given command so the newline character is used instead.
+
+One property of a Linux command is the time limit. You can set a time limit for any command. If the time expires, the command stops executing. Linux has a command-line utility called a timeout, which enables you to execute a command with a time limit.
+Syntax:
+timeout [OPTION] DURATION COMMAND [ARG]...
+To use the command, you specify a timeout value (in seconds) with the ping command.As the mentioned duration is 1,this timeout a ping command after 1 second.
+
+PING (Packet Internet Groper) command is used to check the network connectivity between host and server/host. This command takes as input the IP address or the URL and sends a data packet to the specified address with the message “PING” and get a response from the server/host this time is recorded which is called latency.
+Basically to stop pinging we should use ctrl+c otherwise it will keep on sending packets, however we use the timeout command here so it stops pinging after the specified duration.
+-c option:is used for controlling the number of pings or number of packets to send. Here the number of packets to send is given as 1.
+-w option:is used to timout PING i.e., to stop pingig after sometime. Here the timeout duration is 1 second.
+Syntax:
+PING [OPTIONS] DESTINATION
+With the combination of these commands we are able to transmit and receive one unit of packet and the data such as ip address, number of bytes packet loss percentage , time ,etc is refelected on the terminal. 
+
+8. The obtained data is fed to the grep command using pipe operator.The grep filter searches a file for a particular pattern of characters, and displays all lines that contain that pattern. The pattern that is searched in the file is referred to as the regular expression (grep stands for globally search for regular expression and print out).
+Syntax:
+grep [options] pattern [files]
+The given command is grep "time=",hence the pattern is the string "time=". So the grep filter outputs the lines that contain the time= string in them.
+
+9. These set of lines which are filtered by the grep command are piped as input to the awk command.  
+Awk is a utility that enables a programmer to write tiny but effective programs in the form of statements that define text patterns that are to be searched for in each line of a document and the action that is to be taken when a match is found within a line. Awk is mostly used for pattern scanning and processing. It searches one or more files to see if they contain lines that matches with the specified patterns and then performs the associated actions.
+Syntax:
+awk options 'selection _criteria {action }' input-file > output-file
+The given command is awk '{print substr($7, 6, length($7)) " " substr($4, 1, length($4) -1)}'
+We can see that the given awk command is the combination of sub awk commands such as substr(),length(),print. hence we can understand it betterby splitting the entire command and combine it in the final step.
+print substr($7,6,length($7))- This prints the data contained in the substring, here the substr function specifies 3 arguments, $7 is the 7th column and 6 is the starting character index and length($7) is the ending character index,i.e,This command is fetching us the data in the 7th column each substring starting with an index 6 and to the end of the substring.
+" " is used to concatinate the data that is contained in both the substring operations.
+similarly we solve the other part of the awk command - substr($4,1,length($4)-1) here the data is fetched from the fourth column starting with an index 1 to the end of the substring string excluding last character (sinces it is length($4)-).
+Finally we print the contactinated and space seperated output of both the substrings using the print operation of awk command. This is in the form of sequence of IP address and time duration.
+
+10 This output is piped with the sort command. Since the output is in the number format the sort -n command sorts the data numerically in the ascending order line by line.
+Syntax:
+sort-n
+
+11. This sorted lines of output is piped to an awk command.
+The given command is awk '{print $2 " " $1 "ms"}' 
+This command prints the concatinated output of 2nd column (IP format) and 1st column(numeric format) and concatinates the 1st column data to a string "ms".
+This results in the output format of a sequence of IP formatted numbers and time duration in milli seconds(ms).
+
+12. This data is finally piped with the head command.The head command, as the name implies, print the top n number of data of the given input. By default, it prints the first 10 lines of the specified files.
+Syntax:
+head [OPTION]... [FILE]...
+The given command is head -n 10
+Since the number of lines is specified as 10, the output is displayed as the first 10 lines of the input data filtered by the pipe command.
+
+13. The final output is in the form of 
+
+sunandini@z-Latitude-E5450:~$ curl -s http://public-dns.info/nameserver/br.csv|cut -d, -f1|shuf|tail -n 50| xargs -i timeout 1 ping -c1 -w 1 {}| grep "time="|awk '{print substr($7,6,length($7))" "substr($4,1,length($4)-1)}'|sort -n|awk '{print $2 " " $1 "ms"}'|head -n 10
+
+177.86.233.170 338ms
+201.64.113.214 343ms
+200.150.85.68 354ms
+177.126.170.134 359ms
+189.42.239.34 369ms
+177.91.39.239 370ms
+200.179.97.194 390ms
+189.126.192.4 402ms
+186.215.192.243 404ms
+189.17.213.233 405ms
+sunandini@z-Latitude-E5450:~$ 
+
