@@ -1,0 +1,68 @@
+
+1.Explain what and how the below command does what it does:
+printf 'HEAD / HTTP/1.1\r\nHost: en.wikipedia.org\r\n\r\n' | nc en.wikipedia.org 80
+
+The command has two unix commands piped together
+
+The given command is the combination of several unix commands pipelined together using the pipe operator, it is represented using "|" a pipe is a form of redirection and its function is to combine two or more commands, and in this, the output of one command acts as input to another command, and this command’s output may act as input to the next command and so on.
+Syntax:
+command_1 | command_2 | command_3 | .... | command_N 
+
+Pipes are unidirectional i.e data flows from left to right through the pipeline,hence we execute and solve the given command in the same order.
+
+1. printf command is used to display the given string, number or any other format specifier on the terminal window. It works the same way as printf works in programming languages like C. 
+It tells us what needs to be printed to console.
+
+The given command is : printf 'HEAD / HTTP/1.1\r\nHost: en.wikipedia.org\r\n\r\n' 
+the "printf" command consists of the "http" request to get the header of the mentioned domian name in this case en.wikipedia.org . 
+
+sunandini@z-Latitude-E5450:~$ printf 'HEAD / HTTP/1.1\r\nHost: en.wikipedia.org\r\n\r\n'
+HEAD / HTTP/1.1
+Host: en.wikipedia.org 
+
+The output data of the printf command containing the http request will be pipeled to the nc command as an input .
+
+2. nc command is the netcad command used to connect to the  given host address with the specified port number.(TCP and UDP Connections).
+By default, netcat will attempt to start a TCP connection to the specified host and port.  To establish a UDP connection, use the -u option:
+
+The given command is : nc en.wikipedia.org 80
+here,the the domain server it is getting connected to is the en.wikipedia.org through port 80.
+
+The final output is the header data of en.wikipedia.org from the server.
+
+
+Output:
+
+sunandini@z-Latitude-E5450:~$ printf 'HEAD / HTTP/1.1\r\nHost: en.wikipedia.org\r\n\r\n' | nc en.wikipedia.org 80 
+HTTP/1.1 301 TLS Redirect
+Date: Fri, 24 Jan 2020 05:43:26 GMT
+Server: Varnish
+X-Varnish: 657423945
+X-Cache: cp5008 int
+X-Cache-Status: int-front
+Server-Timing: cache;desc="int-front"
+Set-Cookie: WMF-Last-Access=24-Jan-2020;Path=/;HttpOnly;secure;Expires=Tue, 25 Feb 2020 00:00:00 GMT
+Set-Cookie: WMF-Last-Access-Global=24-Jan-2020;Path=/;Domain=.wikipedia.org;HttpOnly;secure;Expires=Tue, 25 Feb 2020 00:00:00 GMT
+X-Client-IP: 103.211.39.31
+Location: https://en.wikipedia.org/
+Content-Length: 0
+Via: HTTP/1.1 forward.http.proxy:3128
+Connection: keep-alive
+ 
+2.How will you modify the above command to fetch the contents of www.rediff.com ?
+ 
+We can fetch the contents of www.rediff.com by modifying the host name from en.wikipedia.org to www.rediff.com in both the printf and nc command. i.e., to which the host connects.
+
+Modified Command:
+printf 'HEAD / HTTP/1.1\r\nHost: www.rediff.com\r\n\r\n' | nc www.rediff.com 80 
+
+Output:
+
+sunandini@z-Latitude-E5450:~$ printf 'HEAD / HTTP/1.1\r\nHost: www.rediff.com\r\n\r\n' | nc www.rediff.com 80 
+HTTP/1.1 301 Moved Permanently
+Server: AkamaiGHost
+Content-Length: 0
+Location: https://www.rediff.com/
+Date: Fri, 24 Jan 2020 06:42:23 GMT
+Via: HTTP/1.1 forward.http.proxy:3128
+Connection: keep-alive
